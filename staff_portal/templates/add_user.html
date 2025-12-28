@@ -1,0 +1,98 @@
+{% extends 'base_main.html'%}
+{%load static%}
+{%block content%}
+
+<div class="container-fluid d-flex justify-content-center align-items-center bg-light">
+   <div class="card form-card shadow-lg p-4 card_main_all_user">
+      <h3 class="mb-3 text-center">Add New User</h3>
+      <p class="text-muted text-center mb-4">Fill in the details below to create a new user account</p>
+      {% comment %} {% if messages %}
+                        {% for message in messages %} 
+                            <div class="alert 
+                                {% if message.tags == 'success' %} alert-success 
+                                {% elif message.tags == 'error' %} alert-danger 
+                                
+                                {% endif %} alert_msg" 
+                                role="alert">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                {% endif %} {% endcomment %}
+                <div id="loader" class="text-center my-3" style="display: none;">
+    <div class="spinner-grow text-primary" style="width: 3rem; height: 3rem;" role="status">
+        <span class="visually-hidden">Processing...</span>
+    </div>
+    <p class="mt-2">please wait...</p>
+</div>
+                <div id="formMessages"></div>
+      <form id="addUserForm" method="POST" enctype="multipart/form-data">
+         {% csrf_token %}
+         <div class="row g-3">
+            <!-- First Name -->
+            <div class="col-md-6">
+               <label for="first_name" class="form-label">First Name*</label>
+               <input type="text" class="form-control" id="first_name" name="first_name" placeholder="John" >
+            </div>
+            <!-- Last Name -->
+            <div class="col-md-6">
+               <label for="last_name" class="form-label">Last Name*</label>
+               <input type="text" class="form-control" id="last_name" name="last_name" placeholder="Doe" >
+            </div>
+            <!-- Username -->
+            <div class="col-md-6">
+               <label for="username" class="form-label">Username*</label>
+               <input type="text" class="form-control" id="username" name="username" placeholder="johndoe" >
+            </div>
+            <!-- Email -->
+            <div class="col-md-6">
+               <label for="email" class="form-label">Email*</label>
+               <input type="email" class="form-control" id="email" name="email" placeholder="john@example.com" >
+            </div>
+            <!-- Password -->
+            <div class="col-md-6">
+               <label for="password" class="form-label">Password</label>
+               <input type="password" class="form-control" id="password" name="password" placeholder="Enter password" disabled readonly>
+            </div>
+            <!-- Confirm Password -->
+            <div class="col-md-6">
+               <label for="Mobile Number" class="form-label">Mobile Number*</label>
+               <input type="text" class="form-control" id="mobile_number" name="mobile_number" placeholder="Enter Mobile Number" >
+            </div>
+            <!-- Role -->
+            <div class="col-md-12">
+               <label for="role" class="form-label">Role</label>
+               <select class="form-select" id="role" name="role" >
+                  <option value="">Select role</option>
+                  <option value="admin">Admin</option>
+                  <option value="superuser">Superuser</option>
+                  <option value="staff">Staff</option>
+               </select>
+            </div>
+            <div class="mb-3">
+                <label for="formFile" class="form-label">Add User Photo</label>
+                <input class="form-control" type="file" id="formFile" name="staff_photo">
+            </div>
+         </div>
+         <!-- Submit -->
+         <div class="row mt-4 justify-content-center">
+  <div class="col-3">
+    <button type="submit" class="btn btn-primary btn-lg w-100 user_cr_button">
+      Create User
+    </button>
+  </div>
+  <div class="col-3">
+    <button type="reset" class="btn btn-secondary btn-lg w-100 user_cr_button">
+      Reset Form
+    </button>
+  </div>
+</div>
+      </form>
+  </div>
+</div>
+
+<script>
+    const addUserUrl = "{% url 'add_user' %}";
+</script>
+<script src="{% static 'js/add_user_validation.js' %}"></script>
+{% endblock %}
+

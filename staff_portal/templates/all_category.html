@@ -1,0 +1,53 @@
+{% extends 'base_main.html'%}
+{%load static%}
+{%block content%}
+<div class="container-fluid d-flex justify-content-center align-items-center bg-light">
+   <div class="card form-card shadow-lg p-4 card_main_all_user">
+      {% comment %} 
+      <h3 class="mb-3 text-center">Change Password To Activate</h3>
+      <p class="text-muted text-center mb-4">Fill the password below to activate your account</p>
+      {% endcomment %}
+      <div id="loader" class="text-center my-3" style="display: none;">
+         <div class="spinner-grow text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Processing...</span>
+         </div>
+         <p class="mt-2">please wait...</p>
+      </div>
+      <form id="add_category_from" method="POST" enctype="multipart/form-data">
+         {% csrf_token %}
+         <div class="container mt-5">
+            <div class="row justify-content-center">
+               <div class="col-md-12">
+                  <!-- Bootstrap Card for better look -->
+                  <div class="card shadow-lg border-0 rounded-3">
+                     <div class="card-body p-4">
+                        <h3 class="card-title text-center mb-4">All Category List</h3>
+                        <div class="row">
+                           {% for all_cat in show_category %}
+                           
+                           <div class="col-md-4 mb-4  all_cat_card">
+                              <a href="{%url 'all_product_under_cat' all_cat.0%}">
+                              <div class="card shadow-sm w-100 ">
+                                 <img src="{{ all_cat.2 }}" class="card-img-top fixed-img" alt="{{ all_cat.1 }}">
+                                 <div class="card-body text-center">
+                                    <p class="card-text">{{ all_cat.1 }}</p>
+                                 </div>
+                              </div>
+                               </a>
+                           </div>
+                          
+                           {% endfor %}
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </form>
+   </div>
+</div>
+<script>
+   const all_category = "{% url 'all_category' %}";
+</script>
+<script src="{% static 'js/all_category.js' %}"></script>
+{% endblock %}

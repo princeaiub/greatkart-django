@@ -1,0 +1,171 @@
+{% extends 'base_main.html'%}
+{%load static%}
+{%block content%}
+<div class="container-fluid d-flex justify-content-center align-items-center bg-light">
+   <div class="card form-card shadow-lg p-4 card_main_all_user">
+      <h3 class="mb-3 text-center">Edit User</h3>
+      <p class="text-muted text-center mb-4">Fill in the details below to edit user account</p>
+      {% comment %} {% if messages %}
+      {% for message in messages %} 
+      <div class="alert 
+         {% if message.tags == 'success' %} alert-success 
+         {% elif message.tags == 'error' %} alert-danger 
+         {% endif %} alert_msg" 
+         role="alert">
+         {{ message }}
+      </div>
+      {% endfor %}
+      {% endif %} {% endcomment %}
+      <div id="loader" class="text-center my-3" style="display: none;">
+         <div class="spinner-grow text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Processing...</span>
+         </div>
+         <p class="mt-2">please wait...</p>
+      </div>
+      <div id="editformMessages"></div>
+      <form id="editUserForm" method="POST" enctype="multipart/form-data">
+         {% csrf_token %}
+         <div class="row g-3">
+            <!-- First Name -->
+            <div class="col-md-6">
+               <label for="first_name" class="form-label">First Name*</label>
+               <input type="text" class="form-control" id="first_name" name="first_name" placeholder="John" value="{{user_info.0}}" >
+            </div>
+            <!-- Last Name -->
+            <div class="col-md-6">
+               <label for="last_name" class="form-label">Last Name*</label>
+               <input type="text" class="form-control" id="last_name" name="last_name" placeholder="Doe" value="{{user_info.1}}" >
+            </div>
+            <!-- Username -->
+            <div class="col-md-6">
+               <label for="username" class="form-label">Username*</label>
+               <input type="text" class="form-control" id="username" name="username" placeholder="johndoe" value="{{user_info.2}}" readonly disabled >
+            </div>
+            <!-- Email -->
+            <div class="col-md-6">
+               <label for="email" class="form-label">Email*</label>
+               <input type="email" class="form-control" id="email" name="email" placeholder="john@example.com" value="{{user_info.3}}">
+            </div>
+            <!-- Password -->
+            <div class="col-md-6">
+               <label for="password" class="form-label">Password</label>
+               <input type="password" class="form-control" id="password" name="password" placeholder="Enter password" disabled readonly>
+            </div>
+            <!-- Confirm Password -->
+            <div class="col-md-6">
+               <label for="Mobile Number" class="form-label">Mobile Number*</label>
+               <input type="text" class="form-control" id="mobile_number" name="mobile_number" placeholder="Enter Mobile Number" value="{{user_info.4}}" >
+            </div>
+            <!-- Role -->
+            <div class="col-md-12">
+               <label for="role" class="form-label">Role*</label>
+               <select class="form-select" id="role" name="role" >
+                  <option value="">Select role</option>
+                  <option value="admin" {% if user_info.5 == "admin" %} selected {%endif%}>Admin</option>
+                  <option value="superuser" {% if user_info.5 == "superuser" %} selected {%endif%}>Superuser</option>
+                  <option value="staff" {% if user_info.5 == "staff" %} selected {%endif%}>Staff</option>
+               </select>
+            </div>
+            <div class="mb-3">
+               {% comment %} <label for="formFile" class="form-label">Add User Photo</label>
+               <input class="form-control" type="file" id="formFile" name="staff_photo"> {% endcomment %}
+               {% comment %} 
+               <div class="mt-3">
+                  <label for="formFile" class="form-label">Current Photo</label></br>
+                  <img src="{{ user_info.6.url|default:user_info.6 }}" alt="User Photo" 
+                     class="img-thumbnail rounded-circle" 
+                     style="width: 60px; height: 60px; object-fit: cover;">
+               </div>
+               {% endcomment %}
+               <div class="mt-3">
+                  <label for="formFile" class="form-label d-block">Current Photo</label>
+                  <input type="file" id="formFile" name="staff_photo_update" accept="image/*" style="display: none;">
+                  <div class="position-relative d-inline-block" style="width: 80px; height: 80px;">
+                     <img id="previewImage"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="right"
+                        data-bs-title="Click to change Photo"
+                        src="{% if user_info.6 %}{{ user_info.6 }}{% else %}/media/profile_photo/default-user.png{% endif %}"
+                        alt="User Photo"
+                        class="img-thumbnail rounded-circle"
+                        style="width: 80px; height: 80px; object-fit: cover; cursor: pointer;">
+                  </div>
+                  {% if user_info.7 == 0%}
+                  <!-- Manual Password Activate -->
+                  <div class="col-md-6">
+                     <div class="form-check"> </br> 
+                        <label class="form-check-label" for="activate_manually_checkbox">    
+                        Activate manually
+                        </label>
+                        <input class="form-check-input" type="checkbox" name="chk_temp_pass" value="on" id="activate_manually_checkbox">
+                     </div>
+                  </div>   
+                  
+                  {% comment %} If user is inactive then for activation {% endcomment %}
+                  {% elif user_info.7 == 2%}
+                  <!-- Manual Password Activate -->
+                  <div class="col-md-6">
+                     <div class="form-check"> </br> 
+                        <label class="form-check-label" for="enable_user_checkbox">    
+                        Enable User
+                        </label>
+                        <input class="form-check-input" type="checkbox" name="enable_user_checkbox" value="on" id="enable_user_checkbox">
+                     </div>
+                  </div>   
+                  
+                  {%endif%}
+               </div>
+               {% comment %} for tootltip {% endcomment %}
+               <script>
+                  // Initialize all tooltips on the page
+                  document.addEventListener('DOMContentLoaded', function () {
+                    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+                      new bootstrap.Tooltip(tooltipTriggerEl);
+                    });
+                  });
+               </script>
+               <script>
+                  const fileInput = document.getElementById('formFile');
+                  const previewImage = document.getElementById('previewImage');
+                  
+                  // Click on image opens the file dialog
+                  previewImage.addEventListener('click', () => {
+                    fileInput.click();
+                  });
+                  
+                  // Preview the selected image instantly
+                  fileInput.addEventListener('change', (event) => {
+                    const file = event.target.files[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = (e) => {
+                        previewImage.src = e.target.result;
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  });
+               </script>
+            </div>
+         </div>
+         <!-- Submit -->
+         <div class="row mt-4 justify-content-center">
+            <div class="col-3">
+               <button type="submit" class="btn btn-primary btn-lg w-100 user_cr_button">
+               Update User
+               </button>
+            </div>
+            <div class="col-3">
+               <a href="{% url 'all_users' %}" class="btn btn-secondary btn-lg w-100 user_cr_button">
+               Back Previous
+               </a>
+            </div>
+         </div>
+      </form>
+   </div>
+</div>
+<script>
+   const editUserUrl = "{% url 'edit_staff_users' user_id %}";
+</script>
+<script src="{% static 'js/edit_user_validation.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,43 @@
+/* Logo */
+.logo-img {
+  height: 50px;
+}
+
+/* Login Section */
+.login-section {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Card styling */
+.card {
+  border-radius: 1.5rem;
+}
+
+/* Login illustration */
+.login-img {
+  max-height: 280px;
+  object-fit: contain;
+}
+
+/* ✅ Top spacing works */
+.login-container {
+  padding-top: 40px;   /* use padding instead of margin */
+}
+
+/* Footer sticks to bottom */
+footer {
+  margin-top: 20px;      /* keeps footer at bottom */
+  padding-top: 20px;     /* adds space inside footer */
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .card-body {
+    padding: 2rem;
+  }
+  .login-img {
+    max-height: 200px;
+  }
+}

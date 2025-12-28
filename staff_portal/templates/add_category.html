@@ -1,0 +1,96 @@
+{% extends 'base_main.html'%}
+{%load static%}
+{%block content%}
+
+<div class="container-fluid d-flex justify-content-center align-items-center bg-light">
+   <div class="card form-card shadow-lg p-4 card_main_all_user">
+      {% comment %} <h3 class="mb-3 text-center">Change Password To Activate</h3>
+      <p class="text-muted text-center mb-4">Fill the password below to activate your account</p> {% endcomment %}
+      
+                <div id="loader" class="text-center my-3" style="display: none;">
+    <div class="spinner-grow text-primary" style="width: 3rem; height: 3rem;" role="status">
+        <span class="visually-hidden">Processing...</span>
+    </div>
+    <p class="mt-2">please wait...</p>
+</div>
+              
+      <form id="add_category_from" method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
+  
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <!-- Bootstrap Card for better look -->
+        <div class="card shadow-lg border-0 rounded-3">
+          <div class="card-body p-4">
+            
+            <h3 class="card-title text-center mb-4">Add New Category</h3>
+            <p class="text-muted text-center mb-4">Fill the below fileds to add new category</p>
+            <p class="text-center" id="formMessages_add_category"></p>
+            <!--Category Name -->
+
+             <div class="mb-3">
+              <label for="category_name" class="form-label">Category Name</label>
+              <input 
+                type="text" 
+                class="form-control form-control-lg" 
+                id="category_name" 
+                name="category_name" 
+                placeholder="Enter Category Name" 
+                >
+            </div>
+            
+            <!-- Slug -->
+            <div class="mb-3">
+              <label for="category_slug" class="form-label">Category Slug</label>
+              
+              <input 
+                type="text" 
+                class="form-control form-control-lg" 
+                id="category_slug" 
+                name="category_slug" 
+                placeholder="Enter Category Slug" 
+                >
+            </div>
+
+            <!-- Description -->
+            <div class="mb-3">
+              <label for="category_description" class="form-label">Category Description</label>
+              <textarea class="form-control" id="category_description" name="category_description" placeholder="Write Category Description" rows="3"></textarea>
+            </div>
+            {% comment %} Category Image {% endcomment %}
+            <div class="mb-3">
+                <label for="cat_image" class="form-label">Upload Category Image</label>
+                <input class="form-control" name='cat_image' type="file" id="cat_image">
+            </div>
+
+            <!-- Buttons -->
+            <div class="row mt-4">
+              <div class="col-6">
+                <button type="submit" class="btn btn-primary btn-lg w-100 add_cat_btn">
+                  Add Category
+                </button>
+              </div>
+              <div class="col-6">
+                <button type="reset" class="btn btn-outline-secondary btn-lg w-100">
+                  Reset
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+
+  </div>
+</div>
+
+<script>
+    const add_category = "{% url 'add_category' %}";
+</script>
+<script src="{% static 'js/add_category.js' %}"></script>
+{% endblock %}
+

@@ -1,0 +1,75 @@
+
+{% load static %}
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Remos-style Admin Dashboard</title>
+
+  <!-- Bootstrap CSS & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <link href="{% static 'css/staff_main.css'%}" rel="stylesheet" >
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+ 
+</head>
+<body>
+  
+    {%include 'includes/side_bar_main.html'%}
+    {%include 'includes/navbar_main.html'%}
+    {% block content %}
+    {% endblock %}
+  
+  
+    {%include 'includes/footer_staff.html'%}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- For logout auto after 10 min if user is in active -->
+<script>
+(function() {
+    const logoutAfter = 10 * 60 * 1000;  // 10 minutes
+    const warningTime = 9 * 60 * 1000;   // Show warning after 9 minutes
+    let warningTimer, logoutTimer;
+
+    function startTimers() {
+        clearTimeout(warningTimer);
+        clearTimeout(logoutTimer);
+
+        // Show warning at 9 minutes
+        warningTimer = setTimeout(showWarning, warningTime);
+
+        // Logout at 10 minutes
+        logoutTimer = setTimeout(logout, logoutAfter);
+    }
+
+    function resetTimers() {
+        startTimers(); // Reset both timers on activity
+    }
+
+    function showWarning() {
+        if (confirm("⚠️ You will be logged out in 1 minute due to inactivity. Click OK to stay logged in.")) {
+            resetTimers(); // User clicked OK → reset timers
+        }
+    }
+
+    function logout() {
+        window.location.href = "{% url 'sign_out' %}";
+    }
+
+    // Detect user activity
+    window.onload = resetTimers;
+    document.onmousemove = resetTimers;
+    document.onkeypress = resetTimers;
+    document.onclick = resetTimers;
+    document.onscroll = resetTimers;
+})();
+</script>
+ 
+</body>
+
+</html>

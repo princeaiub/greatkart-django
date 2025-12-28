@@ -1,0 +1,23 @@
+{% if all_users.has_other_pages %}
+<div class="pagination-box">
+    <ul class="pagination">
+        {% if all_users.has_previous %}
+        <li><a href="#" class="page-link btn-nav" data-page="1">« First</a></li>
+        <li><a href="#" class="page-link btn-nav" data-page="{{ all_users.previous_page_number }}">Previous</a></li>
+        {% endif %}
+
+        {% for num in all_users.paginator.page_range %}
+            {% if all_users.number == num %}
+            <li><span class="active">{{ num }}</span></li>
+            {% elif num > all_users.number|add:'-3' and num < all_users.number|add:'3' %}
+            <li><a href="#" class="page-link" data-page="{{ num }}">{{ num }}</a></li>
+            {% endif %}
+        {% endfor %}
+
+        {% if all_users.has_next %}
+        <li><a href="#" class="page-link btn-nav" data-page="{{ all_users.next_page_number }}">Next</a></li>
+        <li><a href="#" class="page-link btn-nav" data-page="{{ all_users.paginator.num_pages }}">Last »</a></li>
+        {% endif %}
+    </ul>
+</div>
+{% endif %}

@@ -1,0 +1,57 @@
+{%load static%}
+<div class="flex-grow-1">
+<!-- Top Navbar -->
+<header class="header-dashboard d-flex align-items-center px-3">
+   <div class="d-flex align-items-center flex-grow-1">
+      <button class="btn btn-light d-lg-none me-3" id="sidebarToggle"><i class="bi bi-list"></i></button>
+      <div class="input-group search-bar flex-grow-1">
+         <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+         <input type="text" class="form-control border-start-0" placeholder="Search for products, orders..." />
+      </div>
+   </div>
+   <div class="ms-auto d-flex align-items-center gap-3">
+   <div class="theme-toggle" id="themeSwitch"></div>
+   <button class="btn btn-light position-relative">
+   <i class="bi bi-bell"></i>
+   <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">3</span>
+   </button>
+   <div class="dropdown">
+      <button class="btn btn-light d-flex align-items-center gap-2 dropdown-toggle" data-bs-toggle="dropdown">
+         <!-- User Image -->
+         {% if first_name %}
+         <img src="{{ user_photo|default:'/media/profile_photo/default-user.png' }}" class="rounded-circle" width="36" height="36" alt="User Photo">
+         <!-- User Name & Role -->
+         <div class="d-flex flex-column text-start">
+            <span class="fw-semibold">{{ first_name }}</span>
+            <small class="text-muted">{{roles}}</small> 
+         </div>
+         {%endif%}
+      </button>
+      <!-- Dropdown Menu -->
+      <ul class="dropdown-menu dropdown-menu-end shadow">
+         <li>
+            <a class="dropdown-item d-flex align-items-center gap-2"  href="#">
+            <i class="bi bi-person-circle"></i> Profile
+            </a>
+         </li>
+         <li>
+            <a class="dropdown-item d-flex align-items-center gap-2" href="#">
+            <i class="bi bi-gear"></i> Settings
+            </a>
+         </li>
+         <li>
+            <a class="dropdown-item d-flex align-items-center gap-2" href="{%url 'change_password'%}">
+            <i class="bi bi-lock-fill"></i> Change Password
+            </a>
+         </li>
+         <li>
+            <hr class="dropdown-divider">
+         </li>
+         <li>
+            <a class="dropdown-item d-flex align-items-center gap-2 text-danger" href="{%url 'sign_out'%}">
+            <i class="bi bi-box-arrow-right"></i> Sign out
+            </a>
+         </li>
+      </ul>
+   </div>
+</header>

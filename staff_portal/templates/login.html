@@ -1,0 +1,82 @@
+{% extends 'base_staff.html' %}
+{% load static%}
+{% block content %}
+
+    <section class="login-section">
+      <div class="container login-container">
+        <div class="row justify-content-center align-items-center g-4">
+          
+          <!-- Image -->
+          <div class="col-lg-6 col-md-8 text-center">
+           <!--<img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-login-form/draw2.webp" 
+                 class="img-fluid login-img" alt="Login illustration">-->
+            <img src="{% static 'images/staff_login_img.png' %}" 
+                 class="img-fluid login-img" alt="Login illustration">
+          </div>
+          
+          <!-- Form -->
+          <div class="col-lg-5 col-md-8">
+            <div class="card shadow-lg border-0 rounded-4">
+              <div class="card-body p-5">
+
+                <div class="text-center mb-4">
+                  <p class="lead fw-bold">Welcome To</p>
+                  <img src="{% static 'images/logo.png' %}" alt="Logo" class="logo-img">
+                </div>
+
+                <h4 class="text-center text-primary mb-4">Staff Login</h4>
+                {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert 
+                                {% if message.tags == 'success' %} alert-success 
+                                {% elif message.tags == 'error' %} alert-danger 
+                                
+                                {% endif %}" 
+                                role="alert">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                {% endif %}
+                <form method="POST">
+                  {% csrf_token %}
+                  <!-- Email -->
+                  <div class="form-outline mb-4">
+                    <input type="text" id="username" name= "username" class="form-control form-control-lg" placeholder="Enter Username" required>
+                    <label class="form-label" for="email">Your Username</label>
+                  </div>
+
+                  <!-- Password -->
+                  <div class="form-outline mb-4">
+                    <input type="password" id="password" name= "password" class="form-control form-control-lg" placeholder="Enter password" required>
+                    <label class="form-label" for="password">Password</label>
+                  </div>
+
+                  <!-- Remember + Forgot -->
+                  <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" value="" id="remember">
+                      <label class="form-check-label" for="remember">Remember me</label>
+                    </div>
+                    <a href="#" class="text-decoration-none small">Forgot password?</a>
+                  </div>
+
+                  <!-- Login Button -->
+                  <div class="d-grid">
+                    <button type="submit" class="btn btn-primary btn-lg">Login</button>
+                  </div>                  
+                </form>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      
+    </section>
+
+    <!-- Bootstrap Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
+{%endblock%}

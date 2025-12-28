@@ -1,0 +1,65 @@
+{% for users in all_users %}
+            <tr>
+               <td >{{forloop.counter}}</td>
+               <td>
+                  <!-- User Image -->
+                  {% if users.1 %}
+                  <div class=" d-flex align-items-center gap-2 " >
+                     <button type="button" class="btn btn-light " data-bs-toggle="modal" data-bs-target="#photoModal{{ forloop.counter }}">
+                     <img src="{{ users.6|default:'/media/profile_photo/default-user.png' }}"
+                        class="rounded-circle border object-fit-cover"
+                        width="36" height="36"
+                        alt="User Photo">
+                     </button>
+                     <!-- User Name & Role -->
+                     <div class="d-flex flex-column text-start">
+                        <span class="fw-semibold">{{ users.1 }}</span>
+                        <small class="text-muted">{{users.5}}</small>
+                     </div>
+                     {%endif%}
+                     <!-- Modal -->
+                     <div class="modal fade  " id="photoModal{{ forloop.counter }}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                           <div class="modal-content p-4 rounded-3 shadow-lg align-items-center">
+                              <!-- Close button -->
+                              <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close"></button>
+                              <!-- User photo -->
+                              <img src="{{ users.6|default:'/media/profile_photo/default-user.png' }}" class="rounded-circle border mb-3 shadow-sm " width="200" height="200" alt="User Photo">
+                              <!-- Name -->
+                              <h5 class="fw-bold mb-1">{{ users.1 }}</h5>
+                              <!-- Role -->
+                              <p class="text-muted mb-2">
+                                 {{users.5}}
+                              </p>
+                              <!-- Status badge inside modal -->
+                              {% if users.7 == 1 %}
+                              <span class="badge bg-success">Active</span>
+                              {% elif users.7 == 0 %}
+                              <span class="badge bg-warning text-dark">Inactive</span>
+                              {% elif users.7 == 2 %}
+                              <span class="badge bg-danger">Disabled</span>
+                              {% endif %}
+                           </div>
+                        </div>
+                     </div>
+               </td>
+               <td>{{users.2}}</td>
+               <td>{{users.3}}</td>
+               <td>{{users.4}}</td>
+               {% if users.7 == 1 %}
+               <td><span class="badge text-bg-success">Active</span></td>
+               {% elif users.7 == 0  %}
+               <td><span class="badge text-bg-warning">Inactive</span></td>
+               {% elif users.7 == 2 %}
+               <td><span class="badge text-bg-danger">Disabled</span></td>
+               {% endif %}
+               <td>          
+               <a href="{%url 'edit_staff_users' users.0 %}" type="button" title="Edit" class="text-success"><i class="bi bi-pen  me-3 fs-5" ></i></a> 
+               <a href="/delete_item/{{users.0}}/" type="button" title="Delete" class="text-danger" ><i class="bi bi-trash fs-5" ></i></a>
+               </td>
+            </tr>
+            {% empty %}
+            <tr>
+            <td colspan="7">No users available.</td>
+            </tr>
+            {% endfor %}
