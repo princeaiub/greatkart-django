@@ -22,7 +22,7 @@
 <h2 class="title">{{single_product.1}}</h2>
 
 <div class="mb-3"> 
-	<var class="price h4"><span class="Price-currencySymbol"> ৳ </span>{{single_product.3}}</var> 
+	<var class="price h4"><span class="Price-currencySymbol"> <span class="Price-currencySymbol"> ৳ </span> </span>{{single_product.3}}</var> 
 </div> 
 
 <p>{{single_product.2}}</p>
@@ -71,7 +71,14 @@
 	{%if single_product.4 < 1%}
 	<h5 class="text-danger">Out Of Stock</h5>
 	{%else%}
-	<a href="./product-detail.html" class="btn  btn-primary"> <span class="text">Add to cart</span> <i class="fas fa-shopping-cart"></i>  </a>
+	{% comment %} <a href="{%url 'add_cart' single_product.0 %}" class="btn  btn-primary"> <span class="text">Add to cart</span> <i class="fas fa-shopping-cart"></i>  </a> {% endcomment %}
+	<form method="post" action="{% url 'add_cart' single_product.0 %}" class="d-inline">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-primary">
+        <span class="text">Add to cart</span>
+        <i class="fas fa-shopping-cart"></i>
+    </button>
+</form>
 	{%endif%}
 </article> <!-- product-info-aside .// -->
 		</main> <!-- col.// -->

@@ -29,6 +29,11 @@ urlpatterns = [
     path('store/', store, name='store'),
     path('store/<str:cat_name>/', all_product_under_category_of_store, name='all_product_under_category_of_store'),
     path('store/<str:cat_name>/<str:product_slug>', single_product_details, name='single_product_details'),
+    path('cart/', cart, name='cart'),
+    path('cart/<int:product_id>/' ,add_cart,name='add_cart'),
+    # path('cart/increase_product/<int:product_id>', add_cart, name='increase_product'),
+    path('cart/decrease_product/<int:product_id>', decrease_product, name='decrease_product'),
+    path('cart/remove_product/<int:product_id>', remove_product, name='remove_product'),
     # path of staff_portal
     path('BrowserWeb/staff/login/',staff_login, name='login'),
     path('BrowserWeb/staff/staff_home/', staff_home, name = 'staff_home'),

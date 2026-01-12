@@ -1,5 +1,5 @@
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.db import connection
 from decimal import Decimal
 
@@ -83,5 +83,73 @@ def single_product_details(request,cat_name,product_slug):
         single_product = cursor.fetchone()
        
     return render(request,'product_details.html',{'single_product':single_product})
+
+
+def add_cart(request,product_id):
+    cart = request.session.get('cart',{})
+    # print(cart)
+    # if str(product_id) in cart:
+    #     cart[str(product_id)] +=1
+    # else:
+    #     cart[str(product_id)] =1
+
+    pid = str(product_id)
+    cart[pid] = cart.get(pid,0)+1 #If key exists → return its value
+    
+    request.session['cart'] = cart
+    request.session.modified=True    
+
+    return redirect('cart')
+
+def decrease_product(request,product_id):
+    cart = request.session.get('cart',{})
+    pid = str(product_id)
+    if pid in cart:
+        cart[pid] -=1
+        if  cart[pid] <=0:
+            del cart[pid]
+    request.session['cart'] =cart
+    request.session.modified=True
+    return redirect('cart')
+def remove_product(request,product_id):
+    cart = request.session.get('cart',{})
+    pid = str(product_id)
+    if pid in cart:
+        del cart[pid]
+    request.session['cart'] =cart
+    request.session.modified=True
+    return redirect('cart')
+
+def cart(request):
+    cart = request.session.get('cart',{})
+    cart_items=[]
+    tax_percent = Decimal('0.1')
+    total = Decimal('0.00')
+    if cart:
+        with connection.cursor() as cursor:
+            for pid,qnt in cart.items():
+                cursor.execute("SELECT product_name,product_slug,product_description,product_price,product_stock,product_image FROM product WHERE product_id =%s ",[pid])
+                product = cursor.fetchone()
+
+                if product:
+                    subtotal = product[3]*qnt
+                    total +=subtotal 
+
+                    cart_items.append({
+                        'id':pid,
+                        'name':product[0],
+                        'slug':product[1],
+                        'description':product[2],
+                        'price':product[3],
+                        'stock':product[4],
+                        'image':product[5],
+                        'quantity':qnt,
+                        'subtotal':subtotal
+
+                    })    
+    tax = round(total*tax_percent,2)
+    final_price = round(total+tax,2)  
+   
+    return render(request, 'cart.html', {'cart_items':cart_items,'total':total,'tax':tax,'final_price':final_price})
 
 
