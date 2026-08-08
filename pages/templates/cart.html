@@ -4,10 +4,12 @@
 <section class="section-content padding-y bg">
    <div class="container">
       <!-- ============================ COMPONENT 1 ================================= -->
+       
       <div class="row">
          <aside class="col-lg-9">
             <div class="card">
                <table class="table table-borderless table-shopping-cart">
+                  {%if cart_items%}
                   <thead class="text-muted">
                      <tr class="small text-uppercase">
                         <th scope="col">Product</th>
@@ -23,7 +25,10 @@
                            <figure class="itemside align-items-center">
                               <div class="aside"><img src="{{item.image}}" class="img-sm"></div>
                               <figcaption class="info">
-                                 <a href="#" class="title text-dark">{{item.name}}</a>
+                                 <a href="{% url 'single_product_details' item.category item.slug %}"
+   class="title text-dark">
+   {{ item.name }}
+</a>
                                  <p class="text-muted small">Matrix: {{item.name}} <br> Brand: {{item.slug}}</p>
                               </figcaption>
                            </figure>
@@ -64,14 +69,15 @@
                            <!-- price-wrap .// -->
                         </td>
                         <td class="text-right"> 
-                           <a href="{%url 'remove_product' item.id %}" class="btn btn-danger"> Remove</a>
+                           <a href="{%url 'remove_product' item.id %}" onclick="return confirm('Are you sure you want to delete this item?')" class="btn btn-danger"> Remove</a>
                         </td>
                      </tr>
-                     {% empty %}
+                    {%endfor%}
+                     {% else %}
                      <tr>
                         <td colspan="4">
                            <div class="text-center py-5">
-                              <i class="fa fa-shopping-cart fa-4x text-muted mb-3"></i>
+                              <i class="bi bi-cart-x-fill text-muted mb-3" style="font-size: 4rem;"></i>
                               <h4 class="text-muted">Your cart is empty</h4>
                               <p class="text-muted mb-4">
                                  Add some products to see them here
@@ -82,8 +88,11 @@
                            </div>
                         </td>
                      </tr>
-                     {%endfor%}
+                      
+                     {%endif%}
+                   
                   </tbody>
+                    
                </table>
             </div>
             <!-- card.// -->

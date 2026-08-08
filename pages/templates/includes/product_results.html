@@ -1,0 +1,34 @@
+{% if show_in_store %}
+<header class="border-bottom mb-4 pb-3">
+  <span><b>{{ product_count }}</b> Items found</span>
+</header>
+
+<div class="row">
+  {% for store in show_in_store %}
+  <div class="col-md-4">
+    <figure class="card card-product-grid">
+      <div class="img-wrap">
+        <img src="{{ store.3 }}">
+      </div>
+      <figcaption class="info-wrap">
+        <a href="{% url 'single_product_details' store.6 store.5 %}"
+           class="title">
+          {{ store.1 }}
+        </a>
+        <div class="price-wrap mt-2">
+          <span class="price">৳ {{ store.2 }}</span>
+          <del class="price-old">৳ {{ store.4 }}</del>
+        </div>
+      </figcaption>
+    </figure>
+  </div>
+  {% endfor %}
+</div>
+
+{% include 'includes/paginator.html' %}
+
+{% else %}
+<div class="text-center py-5">
+  <h5>No products found</h5>
+</div>
+{% endif %}

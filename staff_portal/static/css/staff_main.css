@@ -404,3 +404,6 @@ body.dark-mode .form-select {
     color: var(--accent);
   }
   
+  .mandatory_sign{
+    color: red;
+  }

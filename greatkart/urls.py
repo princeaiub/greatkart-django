@@ -34,6 +34,13 @@ urlpatterns = [
     # path('cart/increase_product/<int:product_id>', add_cart, name='increase_product'),
     path('cart/decrease_product/<int:product_id>', decrease_product, name='decrease_product'),
     path('cart/remove_product/<int:product_id>', remove_product, name='remove_product'),
+    path('BrowserWeb/staff/product_search/',product_search, name='product_search'),
+    path('register/',register, name='register'),
+    path('login/',customer_login, name='customer_login'),
+    path('cust_change_password_for_activation/', cust_change_password_for_activation, name='cust_change_password_for_activation'),
+    path('dashboard/',dashboard, name='dashboard'),
+    path('forgot_password/',forgot_password, name='forgot_password'),
+    path('signout/',cust_sign_out, name='cust_sign_out'),
     # path of staff_portal
     path('BrowserWeb/staff/login/',staff_login, name='login'),
     path('BrowserWeb/staff/staff_home/', staff_home, name = 'staff_home'),

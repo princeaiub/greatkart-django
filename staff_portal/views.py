@@ -275,7 +275,7 @@ def add_user(request):
                     "is_superuser,user_role,is_active,photo_superuser,creator_id,time_creation) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,NOW())",
                     [first_name,last_name,username,temp_password,email,mobile_number,is_admin,is_staff,is_superuser,role,is_active,photo_path,inputter_id])
                     if email:
-                        send_mail(subject="Activate Your Account", message=f"Dear {first_name}, \n\n Welcome to GreatKart! To get started, please activate your account using the code below as your temporary password:\n\n Activation Code: {emailed_password} \n\n Simply log in with this code to complete your account setup. For security, we recommend updating your password after logging in.\n\n If you have any questions or need assistance, feel free to contact our support team.\n\n Thank you for joining us! \n Best regards, \n GreatKart Team.", from_email="greatkart@gmail.com",recipient_list=[email],fail_silently=False)
+                        send_mail(subject="Activate Your Account", message=f"Dear {first_name}, \n\n Welcome to GreatKart! To get started, please activate your account using the code below as your temporary password:\n\n Temporary Password: {emailed_password} \n\n Simply log in with this Temporary Password to complete your account setup. For security, we recommend updating your password after logging in.\n\n If you have any questions or need assistance, feel free to contact our support team.\n\n Thank you for joining us! \n Best regards, \n GreatKart Team.", from_email="greatkart@gmail.com",recipient_list=[email],fail_silently=False)
                 #messages.success(request, "User Registered Sucessfully")
                     return JsonResponse({"success":True,"message":"User Registered Sucessfully"})
             except Exception as e:
@@ -740,7 +740,9 @@ def all_product_under_cat(request,cat_id):
 
 
 
-def sign_out(request):    
+def sign_out(request):
+    if 'first_name' not in request.session:
+        return redirect('staff_home')    
     request.session.flush()
     return redirect('login') 
 

@@ -71,6 +71,12 @@
 	{%if single_product.4 < 1%}
 	<h5 class="text-danger">Out Of Stock</h5>
 	{%else%}
+	{%if cart and single_product.0|stringformat:"s" in cart %}
+	 <!-- Already in cart -->
+        <a href="{% url 'cart' %}" class="btn btn-outline-primary">
+             Added – View Cart <i class="fas fa-eye"></i>
+        </a>
+	{%else%}
 	{% comment %} <a href="{%url 'add_cart' single_product.0 %}" class="btn  btn-primary"> <span class="text">Add to cart</span> <i class="fas fa-shopping-cart"></i>  </a> {% endcomment %}
 	<form method="post" action="{% url 'add_cart' single_product.0 %}" class="d-inline">
     {% csrf_token %}
@@ -79,6 +85,7 @@
         <i class="fas fa-shopping-cart"></i>
     </button>
 </form>
+{%endif%}
 	{%endif%}
 </article> <!-- product-info-aside .// -->
 		</main> <!-- col.// -->
