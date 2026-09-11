@@ -166,7 +166,7 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 EMAIL_HOST_USER = 'prince.aiub03@gmail.com'  # Replace with your Gmail address
-EMAIL_HOST_PASSWORD = 'jcer fhzf pqyt nnkc'  # Use an App Password, NOT your Gmail password
+EMAIL_HOST_PASSWORD = 'fgfa jnsp zsdz dcjd'  # Use an App Password, NOT your Gmail password
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER  
 
 # For Automatic session logout after 10 min if inactive

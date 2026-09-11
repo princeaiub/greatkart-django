@@ -1,0 +1,210 @@
+
+{% extends 'base.html'%}
+{%load static%}
+{%block content%}
+
+
+
+
+<section class="section-content padding-y bg">
+<div class="container">
+
+
+
+<!-- ============================ COMPONENT 2 ================================= -->
+<div class="row">
+		<main class="col-md-8">
+
+<article class="card mb-4">
+<div class="card-body">
+	<h4 class="card-title mb-4">Review cart</h4>
+	
+	<div class="row">
+		{% for item in allinfo_place_order %}
+		<div class="col-md-6">
+			<figure class="itemside  mb-4">
+				<div class="aside"><img src="{{item.2}}" class="border img-sm"></div>
+				<figcaption class="info">
+					<p>{{item.0}} </p>
+					<span class="text-muted">{{item.3}}x = <span class="Price-currencySymbol"> <span class="Price-currencySymbol"> ৳ </span> </span>{{ item.1 }} </span>
+				</figcaption>
+			</figure>
+		</div> <!-- col.// -->
+		{% comment %} <div class="col-md-6">
+			<figure class="itemside  mb-4">
+				<div class="aside"><img src="./images/items/2.jpg" class="border img-sm"></div>
+				<figcaption class="info">
+					<p>Apple iPad (2019) 32Gb Wi-Fi gold </p>
+					<span class="text-muted">2x = $560 </span>
+				</figcaption>
+			</figure>
+		</div> <!-- col.// --> {% endcomment %}
+		{% comment %} <div class="col-md-6">
+			<figure class="itemside mb-4">
+				<div class="aside"><img src="./images/items/3.jpg" class="border img-sm"></div>
+				<figcaption class="info">
+					<p>Apple iPad (2019) 32Gb Wi-Fi gold </p>
+					<span class="text-muted">2x = $560 </span>
+				</figcaption>
+			</figure>
+		</div> <!-- col.// --> {% endcomment %}
+		{% comment %} <div class="col-md-6">
+			<figure class="itemside  mb-4">
+				<div class="aside"><img src="./images/items/4.jpg" class="border img-sm"></div>
+				<figcaption class="info">
+					<p>Apple iPad (2019) 32Gb Wi-Fi gold </p>
+					<span class="text-muted">2x = $560 </span>
+				</figcaption>
+			</figure>
+		</div> <!-- col.// --> {% endcomment %}
+		{%endfor%}
+	</div> <!-- row.// -->
+	
+</div> <!-- card-body.// -->
+</article> <!-- card.// -->
+
+
+<article class="card mb-4">
+<div class="card-body">
+	<h4 class="card-title mb-4">Contact info</h4>
+	<form action="">
+		<div class="row">
+			<div class="form-group col-sm-6">
+				<label>First name</label>
+				<input type="text"  class="form-control" value="{{allinfo_fetch.0}}">
+			</div>
+			<div class="form-group col-sm-6">
+				<label>Last name</label>
+				<input type="text"  class="form-control" value="{{allinfo_fetch.1}}">
+			</div>
+			<div class="form-group col-sm-6">
+				<label>Phone</label>
+				<input type="text" class="form-control" value="{{allinfo_fetch.2}}">
+			</div>
+			<div class="form-group col-sm-6">
+				<label>Email</label>
+				<input type="email"  class="form-control" value="{{allinfo_fetch.3}}">
+			</div>
+		</div> <!-- row.// -->	
+	</form>
+</div> <!-- card-body.// -->
+</article> <!-- card.// -->
+
+
+<article class="card mb-4">
+<div class="card-body">
+	<h4 class="card-title mb-4">Delivery info</h4>
+	<form action="">
+			
+
+		<div class="row">
+				<div class="form-group col-sm-6">
+					<label>Country*</label>
+					<input type="email"  class="form-control" value="{{allinfo_fetch.5}}">
+				</div>
+				<div class="form-group col-sm-6">
+					<label>City*</label>
+					<input type="text"  class="form-control" value="{{allinfo_fetch.4}}">
+				</div>
+				<div class="form-group col-sm-12">
+					<label>Address1*</label>
+					<input type="text"  class="form-control" value="{{allinfo_fetch.6}}">
+				</div>
+				
+				<div class="form-group col-sm-12">
+					<label>Address2</label>
+					<input type="text"  class="form-control" value="{{allinfo_fetch.7}}">
+				</div>
+				
+		</div> <!-- row.// -->	
+	</form>
+</div> <!-- card-body.// -->
+</article> <!-- card.// -->
+
+
+<article class="accordion" id="accordion_pay">
+	<div class="card">
+		<header class="card-header">
+			<img src="./images/misc/payment-paypal.png" class="float-right" height="24"> 
+			<label class="form-check collapsed" data-toggle="collapse" data-target="#pay_paynet">
+				<input class="form-check-input" name="payment-option" checked type="radio" value="option2">
+				<h6 class="form-check-label"> 
+					Paypal 
+				</h6>
+			</label>
+		</header>
+		<div id="pay_paynet" class="collapse show" data-parent="#accordion_pay">
+		<div class="card-body">
+			<p class="text-center text-muted">Connect your PayPal account and use it to pay your bills. You'll be redirected to PayPal to add your billing information.</p>
+			<p class="text-center">
+				<a href="#"><img src="./images/misc/btn-paypal.png" height="32"></a>
+				<br><br>
+			</p>
+		</div> <!-- card body .// -->
+		</div> <!-- collapse .// -->
+	</div> <!-- card.// -->
+	<div class="card">
+	<header class="card-header">
+		<img src="./images/misc/payment-card.png" class="float-right" height="24">  
+		<label class="form-check" data-toggle="collapse" data-target="#pay_payme">
+			<input class="form-check-input" name="payment-option" type="radio" value="option2">
+			<h6 class="form-check-label"> Credit Card  </h6>
+		</label>
+	</header>
+	<div id="pay_payme" class="collapse" data-parent="#accordion_pay">
+		<div class="card-body">
+			<p class="alert alert-success">Put Your Card Details </p>
+			<form class="form-inline">
+				<input type="text" class="form-control mr-2" placeholder="xxxx-xxxx-xxxx-xxxx" name="">
+				<input type="text" class="form-control mr-2" style="width: 200px"  placeholder="Name" name="">
+				<input type="text" class="form-control mr-2" style="width: 100px"  placeholder="dd/yy" name="">
+				<input type="number" maxlength="3" class="form-control mr-2"  style="width: 100px"  placeholder="cvc" name=""></br></br>
+				<button class="btn btn btn-success">Button</button>
+			</form>
+		</div> <!-- card body .// -->
+	</div> <!-- collapse .// -->
+	</div> <!-- card.// -->
+	
+</article> 
+<!-- accordion end.// -->
+  
+		</main> <!-- col.// -->
+		<aside class="col-md-4">
+			<div class="card">
+		<div class="card-body">
+			<dl class="dlist-align">
+			  <dt>Total price:</dt>
+			  <dd class="text-right"> <span class="Price-currencySymbol"> <span class="Price-currencySymbol"> ৳ </span> </span>{{ total|floatformat:2 }}</dd>
+			</dl>
+			<dl class="dlist-align">
+			  <dt>Tax:</dt>
+			  <dd class="text-right">  <span class="Price-currencySymbol"> <span class="Price-currencySymbol"> ৳ </span> </span>{{ tax|floatformat:2 }}</dd>
+			</dl>
+			<dl class="dlist-align">
+			  <dt>Total:</dt>
+			  <dd class="text-right text-dark b"><strong><span class="Price-currencySymbol"> <span class="Price-currencySymbol"> ৳ </span> </span>{{ final_price|floatformat:2 }}</strong></dd>
+			</dl>
+			<hr>
+			<p class="text-center mb-3">
+				<img src="/static/images/misc/payments.png" height="26">
+			</p>
+			<a href="./place-order.html" class="btn btn-primary btn-block"> Place Order </a>
+			
+		</div> <!-- card-body.// -->
+		</div> <!-- card.// -->
+		</aside> <!-- col.// -->
+	</div> <!-- row.// -->
+
+<!-- ============================ COMPONENT 2 END//  ================================= -->
+
+
+
+
+</div> <!-- container .//  -->
+</section>
+<!-- ========================= SECTION CONTENT END// ========================= -->
+ <script>
+   const place_order = "{% url 'place_order' %}";
+</script>
+<script src="{% static 'js/place_order.js' %}"></script>
+{%endblock%}

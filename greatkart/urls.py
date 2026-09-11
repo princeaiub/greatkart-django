@@ -40,6 +40,7 @@ urlpatterns = [
     path('cust_change_password_for_activation/', cust_change_password_for_activation, name='cust_change_password_for_activation'),
     path('dashboard/',dashboard, name='dashboard'),
     path('forgot_password/',forgot_password, name='forgot_password'),
+    path('place_order/',place_order, name='place_order'),
     path('signout/',cust_sign_out, name='cust_sign_out'),
     # path of staff_portal
     path('BrowserWeb/staff/login/',staff_login, name='login'),

@@ -16,356 +16,11 @@ import os, re
 from django.core.files.storage import FileSystemStorage
 from django.contrib.auth.hashers import make_password, check_password
 from django.urls import reverse
+from urllib.parse import urlencode
+from django.db import transaction
 
 
-def validate_user_input(
-    first_name=None, last_name=None, user_email=None, user_phone=None, city=None
-):
-    errors = []
-    # First name
-    if not first_name or len(first_name) < 2 or len(first_name) > 20:
-        errors.append("Enter a valid first name")
-
-    # Last name
-    if not last_name or len(last_name) < 2 or len(last_name) > 20:
-        errors.append("Enter a valid last name")
-
-    # Email
-    if not user_email:
-        errors.append("Enter email address")
-    else:
-        try:
-            validate_email(user_email)
-        except ValidationError:
-            errors.append("Enter a valid email address")
-
-    # Mobile number
-    if not user_phone:
-        errors.append("Enter mobile number")
-    elif not re.fullmatch(r"\d{11}", user_phone):
-        errors.append("Mobile number must be exactly 11 digits.")
-
-    # City
-    if city:
-        if len(city) < 2 or len(city) > 50:
-            errors.append("Enter a valid city name")
-
-    # Duplicate Email
-    if user_email:
-        with connection.cursor() as cursor:
-            cursor.execute(
-                "SELECT 1 FROM customer_user WHERE email=%s LIMIT 1", [user_email]
-            )
-            if cursor.fetchone():
-                errors.append(f"Email {user_email} already exists.")
-
-    # Duplicate Phone
-    if user_phone:
-        with connection.cursor() as cursor:
-            cursor.execute(
-                "SELECT 1 FROM customer_user WHERE phone=%s LIMIT 1", [user_phone]
-            )
-            if cursor.fetchone():
-                errors.append(f"Mobile number {user_phone} already exists.")
-
-    return errors
-
-
-def get_products(query=None, page=1, per_page=6):
-    with connection.cursor() as cursor:
-        if query:
-            cursor.execute(
-                """
-                SELECT p.product_id, p.product_name, p.product_price,
-                       p.product_image, p.product_slug, c.category_name
-                FROM product p
-                JOIN category_catrgory c ON p.product_category = c.id
-                WHERE p.product_available = 1
-                  AND (p.product_name LIKE %s OR p.product_description LIKE %s)
-                ORDER BY p.product_id DESC
-                """,
-                [f"%{query}%", f"%{query}%"],
-            )
-        else:
-            cursor.execute(
-                """
-                SELECT p.product_id, p.product_name, p.product_price,
-                       p.product_image, p.product_slug, c.category_name
-                FROM product p
-                JOIN category_catrgory c ON p.product_category = c.id
-                WHERE p.product_available = 1
-                ORDER BY p.product_id DESC
-                """
-            )
-
-        rows = cursor.fetchall()
-
-    products = [
-        (
-            r[0],
-            r[1],
-            r[2],
-            r[3],
-            r[2] * Decimal("1.20"),
-            r[4],
-            r[5],
-        )
-        for r in rows
-    ]
-
-    paginator = Paginator(products, per_page)
-
-    try:
-        page_obj = paginator.page(page)
-    except PageNotAnInteger:
-        page_obj = paginator.page(1)
-    except EmptyPage:
-        page_obj = paginator.page(paginator.num_pages)
-
-    return page_obj, paginator.count
-
-def home(request):
-    if 'cust_user_inactive' in request.session:
-                return redirect('cust_change_password_for_activation')
-    
-        # If user is active, block this page → send them home
-        
-
-
-    with connection.cursor() as cursor:
-        cursor.execute(
-            """
-            SELECT
-                p.product_id,
-                p.product_name,
-                p.product_price,
-                p.product_image,
-                p.product_slug,
-                c.category_name
-            FROM product p
-            JOIN category_catrgory c ON p.product_category = c.id
-            ORDER BY p.product_id DESC
-        """
-        )
-        show_product = cursor.fetchall()
-
-    return render(request, "home.html", {"show_product": show_product})
-
-
-def store(request):
-
-    if 'cust_user_inactive' in request.session:
-        return redirect('cust_change_password_for_activation')
-    page = request.GET.get("page", 1)
-    show_in_store, product_count = get_products(page=page)
-
-    return render(
-        request,
-        "store.html",
-        {
-            "show_in_store": show_in_store,
-            "product_count": product_count,
-        },
-    )
-
-
-def all_product_under_category_of_store(request, cat_name):
-    if 'cust_user_inactive' in request.session:
-            return redirect('cust_change_password_for_activation')
-    with connection.cursor() as cursor:
-        cursor.execute(
-            "SELECT id FROM category_catrgory WHERE category_name=%s", [cat_name]
-        )
-        cat_row = cursor.fetchone()
-        cat_id_of_store = cat_row[0]
-
-        cursor.execute(
-            "SELECT p.product_id, p.product_name, p.product_price, p.product_image, p.product_slug FROM product p WHERE p.product_available = 1 AND p.product_category = %s",
-            [cat_id_of_store],
-        )
-        rows = cursor.fetchall()
-        discount = Decimal("1.2")
-        show_in_store = []
-        for r in rows:
-            product_id = r[0]
-            product_name = r[1]
-            product_price = r[2]
-            product_image = r[3]
-            product_slug = r[4]
-
-            old_price = round(product_price * discount)
-            show_in_store.append(
-                (
-                    product_id,
-                    product_name,
-                    product_price,
-                    product_image,
-                    old_price,
-                    product_slug,
-                    cat_name,
-                )
-            )
-        product_count = len(show_in_store)
-
-    return render(
-        request,
-        "store.html",
-        {"show_in_store": show_in_store, "product_count": product_count},
-    )
-
-
-def single_product_details(request, cat_name, product_slug):
-    if 'cust_user_inactive' in request.session:
-            return redirect('cust_change_password_for_activation')
-    with connection.cursor() as cursor:
-        cursor.execute(
-            "SELECT product_id,product_name,product_description,product_price,product_stock,product_available,product_image FROM product WHERE product_slug=%s",
-            [product_slug],
-        )
-        single_product = cursor.fetchone()
-        cart = request.session.get("cart", {})
-
-    return render(
-        request,
-        "product_details.html",
-        {"single_product": single_product, "cart": cart},
-    )
-
-
-def add_cart(request, product_id):
-    if 'cust_user_inactive' in request.session:
-            return redirect('cust_change_password_for_activation')
-    cart = request.session.get("cart", {})
-    # print(cart)
-    # if str(product_id) in cart:
-    #     cart[str(product_id)] +=1
-    # else:
-    #     cart[str(product_id)] =1
-
-    pid = str(product_id)
-    cart[pid] = cart.get(pid, 0) + 1  # If key exists → return its value
-
-    request.session["cart"] = cart
-    request.session.modified = True
-
-    return redirect("cart")
-
-
-def decrease_product(request, product_id):
-    if 'cust_user_inactive' in request.session:
-            return redirect('cust_change_password_for_activation')
-    cart = request.session.get("cart", {})
-    pid = str(product_id)
-    if pid in cart:
-        cart[pid] -= 1
-        if cart[pid] <= 0:
-            del cart[pid]
-    request.session["cart"] = cart
-    request.session.modified = True
-    return redirect("cart")
-
-
-def remove_product(request, product_id):
-    if 'cust_user_inactive' in request.session:
-            return redirect('cust_change_password_for_activation')
-    cart = request.session.get("cart", {})
-    pid = str(product_id)
-    if pid in cart:
-        del cart[pid]
-    request.session["cart"] = cart
-    request.session.modified = True
-    return redirect("cart")
-
-
-def cart(request):
-    if 'cust_user_inactive' in request.session:
-            return redirect('cust_change_password_for_activation')
-    cart = request.session.get("cart", {})
-    cart_items = []
-    tax_percent = Decimal("0.1")
-    total = Decimal("0.00")
-
-    if cart:
-        with connection.cursor() as cursor:
-            for pid, qnt in cart.items():
-                cursor.execute(
-                    """
-                    SELECT 
-                        p.product_name,
-                        p.product_slug,
-                        p.product_description,
-                        p.product_price,
-                        p.product_stock,
-                        p.product_image,
-                        c.category_name
-                    FROM product p
-                    JOIN category_catrgory c ON p.product_category = c.id
-                    WHERE p.product_id = %s
-                """,
-                    [pid],
-                )
-
-                product = cursor.fetchone()
-
-                if product:
-                    subtotal = product[3] * qnt
-                    total += subtotal
-
-                    cart_items.append(
-                        {
-                            "id": pid,
-                            "name": product[0],
-                            "slug": product[1],
-                            "description": product[2],
-                            "price": product[3],
-                            "stock": product[4],
-                            "image": product[5],
-                            "category": product[6],  # ✅ IMPORTANT
-                            "quantity": qnt,
-                            "subtotal": subtotal,
-                        }
-                    )
-
-    tax = round(total * tax_percent, 2)
-    final_price = round(total + tax, 2)
-
-    return render(
-        request,
-        "cart.html",
-        {
-            "cart_items": cart_items,
-            "total": total,
-            "tax": tax,
-            "final_price": final_price,
-        },
-    )
-
-def product_search(request):
-    query = request.GET.get("q", "").strip()
-    page = request.GET.get("page", 1)
-
-    show_in_store, product_count = get_products(query=query, page=page)
-    # print(product_count)
-
-    html = render_to_string(
-        "includes/product_results.html",
-        {
-            "show_in_store": show_in_store,
-            "product_count": product_count,
-        },
-        request=request,
-    )
-
-    return JsonResponse({"html": html})
-
-
-def register(request):
-    if 'cust_user_inactive' in request.session:
-        return redirect('cust_change_password_for_activation')
-    if 'cust_first_name' in request.session:
-        return redirect('home')
-
-    country_list = [
+country_list = [
         {"code": "AF", "name": "Afghanistan"},
         {"code": "AL", "name": "Albania"},
         {"code": "DZ", "name": "Algeria"},
@@ -561,6 +216,486 @@ def register(request):
         {"code": "ZM", "name": "Zambia"},
         {"code": "ZW", "name": "Zimbabwe"},
     ]
+
+def validate_user_input(
+    first_name=None, last_name=None, user_email=None, user_phone=None, city=None, address_line1=None, address_line2=None
+):
+    errors = []
+    # First name
+    if not first_name or len(first_name) < 2 or len(first_name) > 20:
+        errors.append("Enter a valid first name")
+
+    # Last name
+    if not last_name or len(last_name) < 2 or len(last_name) > 20:
+        errors.append("Enter a valid last name")
+
+    # Email
+    if not user_email:
+        errors.append("Enter email address")
+    else:
+        try:
+            validate_email(user_email)
+        except ValidationError:
+            errors.append("Enter a valid email address")
+
+    # Mobile number
+    if not user_phone:
+        errors.append("Enter mobile number")
+    elif not re.fullmatch(r"\d{11}", user_phone):
+        errors.append("Mobile number must be exactly 11 digits.")
+
+    # City
+    if city:
+        if len(city) < 2 or len(city) > 50:
+            errors.append("Enter a valid city name")
+
+    # Duplicate Email
+    if user_email:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT 1 FROM customer_user WHERE email=%s LIMIT 1", [user_email]
+            )
+            if cursor.fetchone():
+                errors.append(f"Email {user_email} already exists.")
+
+    # Duplicate Phone
+    if user_phone:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT 1 FROM customer_user WHERE phone=%s LIMIT 1", [user_phone]
+            )
+            if cursor.fetchone():
+                errors.append(f"Mobile number {user_phone} already exists.")
+    # Address Line1
+    # if address_line1:
+    if not address_line1 or len(address_line1) < 2 or len(address_line1) > 1000:
+            errors.append("Address Line1 Should be minimum 2 to 1000 chracter")
+    # Address Line1
+    if address_line2:
+        if len(address_line2) < 2 or len(address_line2) > 1000:
+            errors.append("Address Line2 Should be minimum 2 to 1000 chracter")
+
+    return errors
+
+
+def get_products(query=None, page=1, per_page=6):
+    with connection.cursor() as cursor:
+        if query:
+            cursor.execute(
+                """
+                SELECT p.product_id, p.product_name, p.product_price,
+                       p.product_image, p.product_slug, c.category_name
+                FROM product p
+                JOIN category_catrgory c ON p.product_category = c.id
+                WHERE p.product_available = 1
+                  AND (p.product_name LIKE %s OR p.product_description LIKE %s)
+                ORDER BY p.product_id DESC
+                """,
+                [f"%{query}%", f"%{query}%"],
+            )
+        else:
+            cursor.execute(
+                """
+                SELECT p.product_id, p.product_name, p.product_price,
+                       p.product_image, p.product_slug, c.category_name
+                FROM product p
+                JOIN category_catrgory c ON p.product_category = c.id
+                WHERE p.product_available = 1
+                ORDER BY p.product_id DESC
+                """
+            )
+
+        rows = cursor.fetchall()
+
+    products = [
+        (
+            r[0],
+            r[1],
+            r[2],
+            r[3],
+            r[2] * Decimal("1.20"),
+            r[4],
+            r[5],
+        )
+        for r in rows
+    ]
+
+    paginator = Paginator(products, per_page)
+
+    try:
+        page_obj = paginator.page(page)
+    except PageNotAnInteger:
+        page_obj = paginator.page(1)
+    except EmptyPage:
+        page_obj = paginator.page(paginator.num_pages)
+
+    return page_obj, paginator.count
+
+def home(request):
+    if 'cust_user_inactive' in request.session:
+                return redirect('cust_change_password_for_activation')
+    
+        # If user is active, block this page → send them home
+        
+
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT
+                p.product_id,
+                p.product_name,
+                p.product_price,
+                p.product_image,
+                p.product_slug,
+                c.category_name
+            FROM product p
+            JOIN category_catrgory c ON p.product_category = c.id
+            ORDER BY p.product_id DESC
+        """
+        )
+        show_product = cursor.fetchall()
+
+    return render(request, "home.html", {"show_product": show_product})
+
+
+def store(request):
+
+    if 'cust_user_inactive' in request.session:
+        return redirect('cust_change_password_for_activation')
+    page = request.GET.get("page", 1)
+    show_in_store, product_count = get_products(page=page)
+
+    return render(
+        request,
+        "store.html",
+        {
+            "show_in_store": show_in_store,
+            "product_count": product_count,
+        },
+    )
+
+
+def all_product_under_category_of_store(request, cat_name):
+    if 'cust_user_inactive' in request.session:
+            return redirect('cust_change_password_for_activation')
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "SELECT id FROM category_catrgory WHERE category_name=%s", [cat_name]
+        )
+        cat_row = cursor.fetchone()
+        cat_id_of_store = cat_row[0]
+
+        cursor.execute(
+            "SELECT p.product_id, p.product_name, p.product_price, p.product_image, p.product_slug FROM product p WHERE p.product_available = 1 AND p.product_category = %s",
+            [cat_id_of_store],
+        )
+        rows = cursor.fetchall()
+        discount = Decimal("1.2")
+        show_in_store = []
+        for r in rows:
+            product_id = r[0]
+            product_name = r[1]
+            product_price = r[2]
+            product_image = r[3]
+            product_slug = r[4]
+
+            old_price = round(product_price * discount)
+            show_in_store.append(
+                (
+                    product_id,
+                    product_name,
+                    product_price,
+                    product_image,
+                    old_price,
+                    product_slug,
+                    cat_name,
+                )
+            )
+        product_count = len(show_in_store)
+
+    return render(
+        request,
+        "store.html",
+        {"show_in_store": show_in_store, "product_count": product_count},
+    )
+
+
+def single_product_details(request, cat_name, product_slug):
+    if 'cust_user_inactive' in request.session:
+            return redirect('cust_change_password_for_activation')
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "SELECT product_id,product_name,product_description,product_price,product_stock,product_available,product_image FROM product WHERE product_slug=%s",
+            [product_slug],
+        )
+        single_product = cursor.fetchone()
+        cart = request.session.get("cart", {})
+
+    return render(
+        request,
+        "product_details.html",
+        {"single_product": single_product, "cart": cart},
+    )
+
+
+def add_cart(request, product_id):
+    if 'cust_user_inactive' in request.session:
+            return redirect('cust_change_password_for_activation')
+
+    customer_id = request.session.get("customer_id")
+    if customer_id:
+        
+        with transaction.atomic():
+            with connection.cursor() as cursor:                
+                cursor.execute("SELECT cart_id, quantity FROM cart WHERE customer_id=%s and product_id=%s",[customer_id,product_id] )
+                existing_cart = cursor.fetchone()
+
+                if existing_cart:
+                     cursor.execute("UPDATE cart SET quantity=quantity+1, date_added=NOW() WHERE customer_id=%s AND product_id=%s",[customer_id,product_id])
+
+                else:
+                     cursor.execute("INSERT INTO cart (customer_id,product_id,quantity,date_added) VALUES(%s,%s,%s,NOW())",[customer_id,product_id,1])
+                     
+
+    else:
+        cart = request.session.get("cart", {})
+                     # print(cart)
+                     # if str(product_id) in cart:
+                     #     cart[str(product_id)] +=1
+                     # else:
+                     #     cart[str(product_id)] =1
+         
+        pid = str(product_id)
+        cart[pid] = cart.get(pid, 0) + 1  # If key exists → return its value
+         
+        request.session["cart"] = cart
+        request.session.modified = True     
+         
+    return redirect("cart")
+
+
+def decrease_product(request, product_id):
+    if 'cust_user_inactive' in request.session:
+            return redirect('cust_change_password_for_activation')
+    customer_id = request.session.get("customer_id")
+    cart = request.session.get("cart", {})
+    pid = str(product_id)
+    if customer_id:
+        with connection.cursor() as cursor:
+             cursor.execute("SELECT quantity FROM cart WHERE product_id=%s AND customer_id=%s",[pid,customer_id])
+
+             decrease_product = cursor.fetchone()  
+            #  print(decrease_product[0])
+            
+             if decrease_product:
+    
+                quantity = decrease_product[0]
+
+                if quantity > 1:
+
+                    cursor.execute(
+                        """
+                        UPDATE cart
+                        SET quantity = quantity - 1
+                        WHERE product_id=%s
+                        AND customer_id=%s
+                        """,
+                        [pid, customer_id]
+                    )
+
+                elif quantity == 1:
+
+                    cursor.execute(
+                        """
+                        DELETE FROM cart
+                        WHERE product_id=%s
+                        AND customer_id=%s
+                        """,
+                        [pid, customer_id]
+                    )
+
+    # =========================================
+    # Guest customer
+    # =========================================
+    
+    
+    if pid in cart:
+        cart[pid] -= 1
+        if cart[pid] <= 0:
+            del cart[pid]
+    request.session["cart"] = cart
+    request.session.modified = True
+    return redirect("cart")
+
+
+def remove_product(request, product_id):
+    if 'cust_user_inactive' in request.session:
+            return redirect('cust_change_password_for_activation')
+    customer_id = request.session.get("customer_id")
+    cart = request.session.get("cart", {})
+    pid = str(product_id)    
+    if customer_id:
+         with connection.cursor() as cursor:
+              cursor.execute(
+                                      """
+                                      DELETE FROM cart
+                                      WHERE product_id=%s
+                                      AND customer_id=%s
+                                      """,
+                                      [pid, customer_id]
+                                  )
+
+    # =========================================
+        # Guest customer
+    # =========================================
+         
+
+    if pid in cart:
+        del cart[pid]
+    request.session["cart"] = cart
+    request.session.modified = True
+    return redirect("cart")
+
+
+def cart(request):
+    
+    if 'cust_user_inactive' in request.session:
+        return redirect('cust_change_password_for_activation')
+
+    customer_id = request.session.get("customer_id")
+
+    session_cart = request.session.get("cart", {})
+
+    cart_items = []
+    tax_percent = Decimal("0.1")
+    total = Decimal("0.00")
+
+    # ==========================================
+    # STEP 1: Get cart products and quantities
+    # ==========================================
+
+    if customer_id:
+
+        # Logged-in customer → database cart
+
+        with connection.cursor() as cursor:
+
+            cursor.execute(
+                """
+                SELECT product_id, quantity
+                FROM cart
+                WHERE customer_id=%s
+                """,
+                [customer_id]
+            )
+
+            cart_products = cursor.fetchall()
+
+        # Convert DB result to same structure as session cart
+        # cart_products = all_cart_product
+
+    else:
+
+        # Guest customer → session cart
+
+        cart_products = session_cart.items()
+
+
+    # ==========================================
+    # STEP 2: Get product information
+    # ==========================================
+
+    with connection.cursor() as cursor:
+
+        for pid, qnt in cart_products:
+
+            cursor.execute(
+                """
+                SELECT
+                    p.product_name,
+                    p.product_slug,
+                    p.product_description,
+                    p.product_price,
+                    p.product_stock,
+                    p.product_image,
+                    c.category_name
+                FROM product p
+                JOIN category_catrgory c
+                    ON p.product_category = c.id
+                WHERE p.product_id=%s
+                """,
+                [pid]
+            )
+
+            product = cursor.fetchone()
+
+            if product:
+
+                subtotal = product[3] * qnt
+                total += subtotal
+
+                cart_items.append(
+                    {
+                        "id": pid,
+                        "name": product[0],
+                        "slug": product[1],
+                        "description": product[2],
+                        "price": product[3],
+                        "stock": product[4],
+                        "image": product[5],
+                        "category": product[6],
+                        "quantity": qnt,
+                        "subtotal": subtotal,
+                    }
+                )
+
+
+    # ==========================================
+    # STEP 3: Calculate totals
+    # ==========================================
+
+    tax = round(total * tax_percent, 2)
+    final_price = round(total + tax, 2)
+
+
+    return render(
+        request,
+        "cart.html",
+        {
+            "cart_items": cart_items,
+            "total": total,
+            "tax": tax,
+            "final_price": final_price,
+        },
+    )
+
+def product_search(request):
+    query = request.GET.get("q", "").strip()
+    page = request.GET.get("page", 1)
+
+    show_in_store, product_count = get_products(query=query, page=page)
+    # print(product_count)
+
+    html = render_to_string(
+        "includes/product_results.html",
+        {
+            "show_in_store": show_in_store,
+            "product_count": product_count,
+        },
+        request=request,
+    )
+
+    return JsonResponse({"html": html})
+
+
+def register(request):
+    if 'cust_user_inactive' in request.session:
+        return redirect('cust_change_password_for_activation')
+    if 'cust_first_name' in request.session:
+        return redirect('home')
+
+    
     ips = [
         "103.48.16.1",
         "8.34.92.17",
@@ -600,6 +735,8 @@ def register(request):
         gender = request.POST.get("gender")
         city = data.get("city")
         selected_country_name = data.get("selected_country_name")
+        address_line1= data.get("address_line1")
+        address_line2=data.get("address_line2")
         emailed_password = str(random.randint(100000, 999999))
         temp_password = make_password(emailed_password)
         user_photo = request.FILES.get("user_photo")
@@ -626,6 +763,8 @@ def register(request):
             user_email=user_email,
             user_phone=user_phone,
             city=city,
+            address_line1=address_line1,
+            address_line2=address_line2,
         )
         if errors:
             return JsonResponse({"success": False, "errors": errors})
@@ -633,8 +772,8 @@ def register(request):
             try:
                 with connection.cursor() as cursor:
                     cursor.execute(
-                        "INSERT INTO customer_user(first_name,last_name,email,phone,gender,city,country,password,is_active,date_of_creation,photo_customer_user) "
-                        "VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,NOW(),%s)",
+                        "INSERT INTO customer_user(first_name,last_name,email,phone,gender,city,country,address_line1, address_line2,password,is_active,date_of_creation,photo_customer_user) "
+                        "VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,NOW(),%s)",
                         [
                             first_name,
                             last_name,
@@ -643,6 +782,8 @@ def register(request):
                             gender,
                             city,
                             selected_country_name,
+                            address_line1,
+                            address_line2,
                             temp_password,
                             is_active,
                             photo_path,
@@ -675,16 +816,79 @@ def register(request):
         {"all_country_list": all_country_list, "country_name": country_name},
     )
 
+def transfer_session_cart_to_database(request, customer_id):
+    
+    cart = request.session.get("cart", {})
+
+    if not cart:
+        return
+
+    with transaction.atomic():
+
+        with connection.cursor() as cursor:
+
+            for product_id, quantity in cart.items():
+
+                # Check if product already exists
+                cursor.execute(
+                    """
+                    SELECT cart_id
+                    FROM cart
+                    WHERE customer_id=%s
+                    AND product_id=%s
+                    """,
+                    [customer_id, product_id]
+                )
+
+                existing_cart = cursor.fetchone()
+
+                if existing_cart:
+
+                    # Product already exists
+                    cursor.execute(
+                        """
+                        UPDATE cart
+                        SET quantity = quantity + %s,
+                            date_added = NOW()
+                        WHERE customer_id=%s
+                        AND product_id=%s
+                        """,
+                        [quantity, customer_id, product_id]
+                    )
+
+                else:
+
+                    # New product for this customer
+                    cursor.execute(
+                        """
+                        INSERT INTO cart
+                        (customer_id, product_id, quantity, date_added)
+                        VALUES (%s, %s, %s, NOW())
+                        """,
+                        [customer_id, product_id, quantity]
+                    )
+
+    # ----------------------------------
+    # DB transaction succeeded
+    # ----------------------------------
+
+    request.session.pop("cart", None)
+    request.session.modified = True
+
+
 
 def customer_login(request):
+
     if 'cust_user_inactive' in request.session:
         return redirect('cust_change_password_for_activation')
     if 'cust_first_name' in request.session:
         return redirect('home')
     if request.method == "POST":
-
+        next_url = request.POST.get("next")
         user_email = request.POST.get("user_email", "").strip()
         user_password = request.POST.get("user_password", "").strip()
+        remember_me = request.POST.get("remember_me") == "on"
+        
 
         errors = []
 
@@ -700,7 +904,7 @@ def customer_login(request):
         with connection.cursor() as cursor:
             cursor.execute(
                 """
-                SELECT first_name,password,is_active,photo_customer_user
+                SELECT id,first_name,password,is_active,photo_customer_user
                 FROM customer_user
                 WHERE email=%s
             """,
@@ -712,7 +916,7 @@ def customer_login(request):
         if not customer_user:
             return JsonResponse({"success": False, "message": "User not found."})
 
-        db_first_name, db_password, db_is_active, db_photo = customer_user
+        db_id,db_first_name, db_password, db_is_active, db_photo = customer_user
         
         if not check_password(user_password, db_password):
             return JsonResponse({"success": False, "message": "Incorrect password."})
@@ -728,7 +932,14 @@ def customer_login(request):
         request.session["cust_first_name"] = db_first_name
         request.session["photo_customer_user"] = db_photo
         request.session["user_email"] = user_email
+        request.session["customer_id"] = db_id
 
+        if remember_me:
+            request.session.set_expiry(2592000)  # 30 days
+        else:
+            request.session.set_expiry(0)        # Browser close
+
+        
         if db_is_active == 0:
             # print("hello")
             # request.session["cust_user_inactive"] = True
@@ -751,14 +962,27 @@ def customer_login(request):
                     "UPDATE customer_user SET last_login=NOW() WHERE email=%s",
                     [user_email],
                 )
+
+                 # Transfer guest cart
+            try:
+                transfer_session_cart_to_database(request, db_id)
+
+            except Exception as e:
+
+                print("Cart transfer error:", e)
+
+                return JsonResponse({
+                    "success": False,
+                    "message": f"Cart transfer failed: {str(e)}"
+                })
+
             return JsonResponse(
                 {
                     "success": True,
                     "message": "Login successful.",
-                    "redirect_url": reverse("home"),
+                    "redirect_url": next_url or reverse("home"),
                 }
             )
-
     return render(request, "customer_login.html")
 
 
@@ -855,6 +1079,49 @@ def forgot_password(request):
          
 
     return render(request,'forgot_password.html')
+
+def place_order(request):
+     if 'cust_user_inactive' in request.session:
+         return redirect('cust_change_password_for_activation')
+     elif 'cust_first_name' not in request.session:
+             # Guest cart
+            session_cart = request.session.get("cart", {})
+            if not session_cart:
+                 return redirect('cart')
+            else:
+                login_url=reverse('customer_login')
+                query_string = urlencode({'next':request.path})
+                return redirect(f'{login_url}?{query_string}')
+     else: 
+            user_email = request.session.get("user_email")
+            customer_id = request.session.get("customer_id")
+            with connection.cursor() as cursor:
+                 cursor.execute("SELECT first_name,last_name,phone,email,city,country,address_line1,address_line2 FROM customer_user WHERE email=%s",[user_email])
+                 allinfo_fetch = cursor.fetchone() 
+
+            with connection.cursor() as cursor:
+                 cursor.execute("SELECT p.product_name,p.product_price,p.product_image,c.quantity FROM product p JOIN cart c ON p.product_id=c.product_id WHERE  c.customer_id=%s ",[customer_id])
+                 allinfo_place_order=cursor.fetchall()
+                 print(f'product name {allinfo_place_order[0]}')
+                 total = Decimal("0.00")
+
+                 if allinfo_place_order:
+                        for item in allinfo_place_order:
+                             total += item[1] * item[3]
+                        tax = round(total * Decimal("0.10"), 2)
+                        final_price = round(total + tax, 2)
+                        
+                 
+                                             
+
+     
+     return render (request,'place_order.html',{"allinfo_fetch": allinfo_fetch,
+        "allinfo_place_order": allinfo_place_order,
+        "total": total,
+        "tax": tax,
+        "final_price": final_price,})
+
+     
 
 
 def cust_sign_out(request):

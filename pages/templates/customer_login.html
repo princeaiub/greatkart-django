@@ -16,6 +16,12 @@
          <div id="formMessages"></div>
          <form id="customer_login_form" method="post">
             {% csrf_token %}
+            <input type="hidden"
+           name="next"
+           value="{{ request.GET.next|default:'' }}">
+
+
+
             <div class="form-group">
                <input type="email" name = "user_email" class="form-control" placeholder="Email Address" >
             </div>
@@ -23,6 +29,17 @@
             <div class="form-group">
                <input type="password" name = "user_password" class="form-control" placeholder="Password" >
             </div>
+            <div class="form-check">
+    <input 
+        class="form-check-input" 
+        type="checkbox" 
+        name="remember_me" 
+        id="remember_me"
+    >
+    <label class="form-check-label" for="remember_me">
+        Remember me
+    </label>
+</div>
             <!-- form-group// -->
             <div class="form-group">
                <a href="{%url 'forgot_password'%}" class="float-right">Forgot password?</a> 
